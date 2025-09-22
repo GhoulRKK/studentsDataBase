@@ -140,6 +140,7 @@ int main() {
         cout << "=== СИСТЕМА УПРАВЛЕНИЯ СТУДЕНТАМИ ===\n";
         cout << "1. Добавить студента\n";
         cout << "2. Вывести список студентов\n";
+        cout << "3. Редактировать информацию о студенте\n";
         cout << "0. Выход\n";
         cout << "Выберите действие: ";
         cin >> choice;
@@ -150,6 +151,9 @@ int main() {
             break;
         case 2:
             displayStudents(database);
+            break;
+        case 3:
+            editStudent(database);
             break;
         case 0:
             cout << "Выход из программы.\n";
