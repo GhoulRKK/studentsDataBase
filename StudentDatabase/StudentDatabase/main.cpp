@@ -1,6 +1,11 @@
-﻿#include <iostream>
-#include <vector>
-#include <string>
+﻿#include <iostream>      // для ввода/вывода (cout, cin)
+#include <vector>        // для работы с векторами (база данных студентов)
+#include <string>        // для работы со строками (имя, специальность)
+#include <Windows.h>     // для русской кодировки в консоли
+#include <limits>        // для очистки буфера ввода (чтобы cin работал правильно)
+
+using namespace std;
+
 
 struct Student {
     std::string name;
