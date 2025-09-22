@@ -47,12 +47,13 @@ int main() {
 
     int choice;
     do {
-        std::cout << "Меню:\n";
+        std::cout << "=== СИСТЕМА УПРАВЛЕНИЯ СТУДЕНТАМИ ===\n";
         std::cout << "1. Добавить студента\n";
         std::cout << "2. Вывести список студентов\n";
+        std::cout << "3. Редактировать информацию о студенте\n";
         std::cout << "0. Выход\n";
         std::cout << "Выберите действие: ";
-        std::cin >> choice;
+        cin >> choice;
 
         switch (choice) {
         case 1:
@@ -61,12 +62,16 @@ int main() {
         case 2:
             displayStudents(database);
             break;
+        case 3:
+            ///editStudent(database);
+            break;
         case 0:
-            std::cout << "Выход из программы.\n";
+           /// cout << "Выход из программы.\n";
             break;
         default:
             std::cout << "Неверный выбор. Попробуйте снова.\n";
         }
+        std::cout << "\n";
     } while (choice != 0);
 
     return 0;
