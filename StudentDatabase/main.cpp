@@ -3,14 +3,16 @@
 #include <string>
 #include <Windows.h>
 #include <limits>
+#include <sstream>
+#include <gtest/gtest.h>
 
 using namespace std;
 
 struct Student {
     string name;
-    int age = 0;        // инициализировал
+    int age = 0;
     string major;
-    double gpa = 0.0;   // инициализировал
+    double gpa = 0.0;
 };
 
 // Функция для добавления студента
@@ -50,7 +52,7 @@ void displayStudents(const vector<Student>& database) {
 int findStudentByName(const vector<Student>& database, const string& name) {
     for (size_t i = 0; i < database.size(); ++i) {
         if (database[i].name == name) {
-            return (int)i;  // исправил преобразование
+            return (int)i;
         }
     }
     return -1;
@@ -87,7 +89,6 @@ void editStudent(vector<Student>& database) {
     cout << "\n=== РЕДАКТИРОВАНИЕ СТУДЕНТА ===\n";
     displayStudentInfo(database[studentIndex]);
 
-    // Добавляем меню редактирования
     int editChoice;
     do {
         cout << "\nЧто вы хотите отредактировать?\n";
@@ -129,7 +130,159 @@ void editStudent(vector<Student>& database) {
     } while (editChoice != 0);
 }
 
-int main() {
+// ==================== ТЕСТЫ ====================
+
+// Тестовый класс
+class StudentDatabaseTest : public ::testing::Test {
+protected:
+    vector<Student> database;
+    
+    void SetUp() override {
+        database.clear();
+    }
+    
+    void TearDown() override {
+        database.clear();
+    }
+    
+    // Вспомогательная функция для добавления тестового студента
+    void addTestStudent(const string& name, int age, const string& major, double gpa) {
+        Student student;
+        student.name = name;
+        student.age = age;
+        student.major = major;
+        student.gpa = gpa;
+        database.push_back(student);
+    }
+};
+
+// Тест 1: Добавление студента в базу данных
+TEST_F(StudentDatabaseTest, AddStudentTest) {
+    // Подготовка
+    stringstream input;
+    input << "Иван\n20\nИнформатика\n4.5\n";
+    
+    auto origCin = cin.rdbuf();
+    cin.rdbuf(input.rdbuf());
+    
+    // Действие
+    addStudent(database);
+    
+    // Восстанавливаем оригинальный cin
+    cin.rdbuf(origCin);
+    
+    // Проверка
+    ASSERT_EQ(database.size(), 1);
+    EXPECT_EQ(database[0].name, "Иван");
+    EXPECT_EQ(database[0].age, 20);
+    EXPECT_EQ(database[0].major, "Информатика");
+    EXPECT_DOUBLE_EQ(database[0].gpa, 4.5);
+}
+
+// Тест 2: Поиск студента по имени
+TEST_F(StudentDatabaseTest, FindStudentByNameTest) {
+    // Подготовка
+    addTestStudent("Петр", 21, "Математика", 4.7);
+    addTestStudent("Мария", 19, "Физика", 4.3);
+    addTestStudent("Алексей", 22, "Химия", 4.1);
+    
+    // Действие и проверка
+    EXPECT_EQ(findStudentByName(database, "Мария"), 1);
+    EXPECT_EQ(findStudentByName(database, "Петр"), 0);
+    EXPECT_EQ(findStudentByName(database, "Алексей"), 2);
+    EXPECT_EQ(findStudentByName(database, "Несуществующий"), -1);
+}
+
+// Тест 3: Редактирование имени студента
+TEST_F(StudentDatabaseTest, EditStudentNameTest) {
+    // Подготовка
+    addTestStudent("Ольга", 20, "Биология", 4.6);
+    
+    stringstream input;
+    input << "Ольга\n1\nАнна\n0\n";
+    
+    auto origCin = cin.rdbuf();
+    cin.rdbuf(input.rdbuf());
+    
+    // Действие
+    editStudent(database);
+    
+    // Восстанавливаем
+    cin.rdbuf(origCin);
+    
+    // Проверка
+    EXPECT_EQ(database[0].name, "Анна");
+    EXPECT_EQ(database[0].age, 20);
+    EXPECT_EQ(database[0].major, "Биология");
+    EXPECT_DOUBLE_EQ(database[0].gpa, 4.6);
+}
+
+// Тест 4: Редактирование всех полей студента
+TEST_F(StudentDatabaseTest, EditAllStudentFieldsTest) {
+    // Подготовка
+    addTestStudent("Дмитрий", 21, "Информатика", 4.2);
+    
+    stringstream input;
+    input << "Дмитрий\n1\nДенис\n2\n22\n3\nПрограммирование\n4\n4.8\n0\n";
+    
+    auto origCin = cin.rdbuf();
+    cin.rdbuf(input.rdbuf());
+    
+    // Действие
+    editStudent(database);
+    
+    // Восстанавливаем
+    cin.rdbuf(origCin);
+    
+    // Проверка
+    EXPECT_EQ(database[0].name, "Денис");
+    EXPECT_EQ(database[0].age, 22);
+    EXPECT_EQ(database[0].major, "Программирование");
+    EXPECT_DOUBLE_EQ(database[0].gpa, 4.8);
+}
+
+// Тест 5: Попытка редактирования несуществующего студента
+TEST_F(StudentDatabaseTest, EditNonExistentStudentTest) {
+    // Подготовка
+    addTestStudent("Сергей", 23, "Физика", 4.4);
+    
+    stringstream input;
+    input << "Александр\n";
+    
+    stringstream output;
+    auto origCout = cout.rdbuf();
+    cout.rdbuf(output.rdbuf());
+    
+    auto origCin = cin.rdbuf();
+    cin.rdbuf(input.rdbuf());
+    
+    // Действие
+    editStudent(database);
+    
+    // Восстанавливаем
+    cin.rdbuf(origCin);
+    cout.rdbuf(origCout);
+    
+    // Проверка
+    EXPECT_EQ(database[0].name, "Сергей");
+    EXPECT_EQ(database[0].age, 23);
+    EXPECT_EQ(database[0].major, "Физика");
+    EXPECT_DOUBLE_EQ(database[0].gpa, 4.4);
+    
+    string outputStr = output.str();
+    EXPECT_TRUE(outputStr.find("не найден") != string::npos);
+}
+
+// ==================== ОСНОВНАЯ ПРОГРАММА ====================
+
+int main(int argc, char **argv) {
+    // Если переданы аргументы командной строки, запускаем тесты
+    if (argc > 1 && string(argv[1]) == "--test") {
+        ::testing::InitGoogleTest(&argc, argv);
+        return RUN_ALL_TESTS();
+    }
+    
+    // Иначе запускаем обычную программу
     SetConsoleOutputCP(1251);
     SetConsoleCP(1251);
 
@@ -141,6 +294,7 @@ int main() {
         cout << "1. Добавить студента\n";
         cout << "2. Вывести список студентов\n";
         cout << "3. Редактировать информацию о студенте\n";
+        cout << "4. Запустить тесты\n";
         cout << "0. Выход\n";
         cout << "Выберите действие: ";
         cin >> choice;
@@ -154,6 +308,15 @@ int main() {
             break;
         case 3:
             editStudent(database);
+            break;
+        case 4:
+            // Запуск тестов из меню
+            {
+                int test_argc = 2;
+                char* test_argv[] = {(char*)"program", (char*)"--test", nullptr};
+                ::testing::InitGoogleTest(&test_argc, test_argv);
+                RUN_ALL_TESTS();
+            }
             break;
         case 0:
             cout << "Выход из программы.\n";
