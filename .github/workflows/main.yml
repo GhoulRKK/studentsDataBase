@@ -1,21 +1,54 @@
-name: C/C++ CI
+name: C++ CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main, master ]
 
 jobs:
-  build:
-
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: installation
-      run: sudo apt install -y googletest libgtest-dev build-essential gcovr
-    - name: make
-      run: make
-    - name: execute
-      run: ./program.out
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Debug file structure
+      run: |
+        echo "=== File Structure ==="
+        find . -name "*.cpp" -type f | sort
+        echo "=== StudentDatabase contents ==="
+        ls -la StudentDatabase/
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++ cmake
+
+    - name: Build GoogleTest
+      run: |
+        git clone https://github.com/google/googletest.git -b release-1.12.1
+        cd googletest
+        mkdir build && cd build
+        cmake ..
+        make
+        sudo make install
+
+    - name: Compile main program
+      working-directory: ./StudentDatabase
+      run: |
+        g++ -o student_database main.cpp -std=c++11
+        echo "✅ Main program compiled successfully"
+
+    - name: Compile tests
+      working-directory: ./StudentDatabase
+      run: |
+        g++ -o run_tests test.cpp -lgtest -lgtest_main -lpthread -std=c++11
+        echo "✅ Tests compiled successfully"
+
+    - name: Run tests
+      working-directory: ./StudentDatabase
+      run: |
+        echo "🧪 Running tests..."
+        ./run_tests
