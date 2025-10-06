@@ -1,7 +1,6 @@
 ﻿#include <iostream>
 #include <vector>
 #include <string>
-#include <Windows.h>
 #include <limits>
 #include <sstream>
 #include <gtest/gtest.h>
