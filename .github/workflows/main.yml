@@ -26,9 +26,9 @@ jobs:
         sudo make
         sudo cp lib/*.a /usr/lib
 
-    - name: Compile program
+    - name: Compile program with C++14
       working-directory: ./StudentDatabase
-      run: g++ -o student_database main.cpp -lgtest -lgtest_main -lpthread -std=c++11
+      run: g++ -o student_database main.cpp -lgtest -lgtest_main -lpthread -std=c++14
 
     - name: Run tests
       working-directory: ./StudentDatabase

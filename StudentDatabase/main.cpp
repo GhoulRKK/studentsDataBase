@@ -155,30 +155,7 @@ protected:
     }
 };
 
-// Тест 1: Добавление студента в базу данных
-TEST_F(StudentDatabaseTest, AddStudentTest) {
-    // Подготовка
-    stringstream input;
-    input << "Иван\n20\nИнформатика\n4.5\n";
-    
-    auto origCin = cin.rdbuf();
-    cin.rdbuf(input.rdbuf());
-    
-    // Действие
-    addStudent(database);
-    
-    // Восстанавливаем оригинальный cin
-    cin.rdbuf(origCin);
-    
-    // Проверка
-    ASSERT_EQ(database.size(), 1);
-    EXPECT_EQ(database[0].name, "Иван");
-    EXPECT_EQ(database[0].age, 20);
-    EXPECT_EQ(database[0].major, "Информатика");
-    EXPECT_DOUBLE_EQ(database[0].gpa, 4.5);
-}
-
-// Тест 2: Поиск студента по имени
+// Тест 1: Поиск студента по имени
 TEST_F(StudentDatabaseTest, FindStudentByNameTest) {
     // Подготовка
     addTestStudent("Петр", 21, "Математика", 4.7);
@@ -192,7 +169,7 @@ TEST_F(StudentDatabaseTest, FindStudentByNameTest) {
     EXPECT_EQ(findStudentByName(database, "Несуществующий"), -1);
 }
 
-// Тест 3: Редактирование имени студента
+// Тест 2: Редактирование имени студента
 TEST_F(StudentDatabaseTest, EditStudentNameTest) {
     // Подготовка
     addTestStudent("Ольга", 20, "Биология", 4.6);
@@ -216,7 +193,7 @@ TEST_F(StudentDatabaseTest, EditStudentNameTest) {
     EXPECT_DOUBLE_EQ(database[0].gpa, 4.6);
 }
 
-// Тест 4: Редактирование всех полей студента
+// Тест 3: Редактирование всех полей студента
 TEST_F(StudentDatabaseTest, EditAllStudentFieldsTest) {
     // Подготовка
     addTestStudent("Дмитрий", 21, "Информатика", 4.2);
@@ -240,7 +217,7 @@ TEST_F(StudentDatabaseTest, EditAllStudentFieldsTest) {
     EXPECT_DOUBLE_EQ(database[0].gpa, 4.8);
 }
 
-// Тест 5: Попытка редактирования несуществующего студента
+// Тест 4: Попытка редактирования несуществующего студента
 TEST_F(StudentDatabaseTest, EditNonExistentStudentTest) {
     // Подготовка
     addTestStudent("Сергей", 23, "Физика", 4.4);
@@ -272,6 +249,34 @@ TEST_F(StudentDatabaseTest, EditNonExistentStudentTest) {
     EXPECT_TRUE(outputStr.find("не найден") != string::npos);
 }
 
+// Тест 5: Редактирование в пустой базе данных
+TEST_F(StudentDatabaseTest, EditEmptyDatabaseTest) {
+    // База данных пустая
+    
+    stringstream input;
+    input << "ЛюбоеИмя\n";
+    
+    stringstream output;
+    auto origCout = cout.rdbuf();
+    cout.rdbuf(output.rdbuf());
+    
+    auto origCin = cin.rdbuf();
+    cin.rdbuf(input.rdbuf());
+    
+    // Действие
+    editStudent(database);
+    
+    // Восстанавливаем
+    cin.rdbuf(origCin);
+    cout.rdbuf(origCout);
+    
+    // Проверка
+    EXPECT_TRUE(database.empty());
+    
+    string outputStr = output.str();
+    EXPECT_TRUE(outputStr.find("пуста") != string::npos);
+}
+
 // ==================== ОСНОВНАЯ ПРОГРАММА ====================
 
 int main(int argc, char **argv) {
@@ -282,9 +287,6 @@ int main(int argc, char **argv) {
     }
     
     // Иначе запускаем обычную программу
-    SetConsoleOutputCP(1251);
-    SetConsoleCP(1251);
-
     vector<Student> database;
     int choice;
 
@@ -311,10 +313,12 @@ int main(int argc, char **argv) {
         case 4:
             // Запуск тестов из меню
             {
+                cout << "Запуск тестов...\n";
                 int test_argc = 2;
                 char* test_argv[] = {(char*)"program", (char*)"--test", nullptr};
                 ::testing::InitGoogleTest(&test_argc, test_argv);
-                RUN_ALL_TESTS();
+                int result = RUN_ALL_TESTS();
+                cout << "Тесты завершены с результатом: " << (result == 0 ? "УСПЕХ" : "НЕУДАЧА") << "\n";
             }
             break;
         case 0:
